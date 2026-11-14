@@ -13,7 +13,7 @@ Every PR this skill creates carries the same **fixed shape**: one sentence namin
 
 Short is the point. One sentence per section; the `Closes` line is a reference, not prose, and the diagram carries the structure that prose would spend a paragraph on. When the filtered diff touches no such file, say so in one line instead of drawing a diagram.
 
-`local-feature-branch-pr` owns branch + commit. This skill starts once commits exist and owns only the PR.
+`local-triage-work` owns branch + commit. This skill starts once commits exist and owns only the PR.
 
 ## Process
 
@@ -25,7 +25,7 @@ git symbolic-ref --short refs/remotes/origin/HEAD    # → e.g. origin/master
 git log origin/<base>..HEAD --oneline
 ```
 
-Resolve `<base>` from `origin/HEAD`; if that fails, prefer `master` then `main`, and if both exist ask the user which one.
+Resolve `<base>` from `origin/HEAD`; if that fails, use whichever of `master` and `main` exists, and ask the user which one is the base when both do.
 
 Stop with a one-line reason when any of these is true:
 
