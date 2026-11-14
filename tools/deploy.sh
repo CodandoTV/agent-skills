@@ -4,7 +4,7 @@
 #     tools/deploy.sh --dry-run
 #     tools/deploy.sh
 #
-# Use this instead of `npx skills add` for these two skills: the installer
+# Use this instead of `npx skills add` for these skills: the installer
 # materializes its own copy in ~/.agents/skills and records a lock entry whose
 # upstream hashes no longer match your edits. A running agent picks up file
 # changes on the next load; no restart is needed.
