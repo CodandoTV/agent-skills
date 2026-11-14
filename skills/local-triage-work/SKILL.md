@@ -90,7 +90,7 @@ remote_slug() {
 }
 ```
 
-Prefer a remote named `origin`; when the input was a GitHub issue, require a remote whose normalized slug equals `ISSUE_SLUG`; when the input was text, prefer `origin`. Ask when no remote is usable or more than one qualifies. Call the winner `REMOTE`.
+Prefer a remote named `origin`; when the input was a GitHub issue, require a remote whose normalized slug equals `ISSUE_SLUG`, compared case-insensitively; when the input was text, prefer `origin`. Ask when no remote is usable or more than one qualifies. Call the winner `REMOTE`.
 
 Stop with one exact fix command when:
 
