@@ -19,6 +19,8 @@ What the version numbers mean for a skill, which is not quite library software:
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-11-14
+
 ### Added
 
 - `make link`, `make sync`, `make deploy`, and `make drift` (scripts under `tools/`)
@@ -34,7 +36,7 @@ What the version numbers mean for a skill, which is not quite library software:
   `Closes #N` (or `Closes owner/repo#N`) line per issue, resolved from the user's
   request, the branch commits, or the branch name, verified with `gh issue view`,
   and omitted when the branch closes none. This changes the fixed PR shape, so it
-  is a major release when published.
+  is a major release.
 
 ## [1.0.0] - 2026-11-14
 
@@ -50,5 +52,6 @@ What the version numbers mean for a skill, which is not quite library software:
 - `tools/validate-skills.py` plus the `validate-skills` workflow, keeping frontmatter,
   the catalog description cap, and the paths cited by each body in sync.
 
-[Unreleased]: https://github.com/CodandoTV/agent-skills/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/CodandoTV/agent-skills/compare/v2.0.0...HEAD
+[2.0.0]: https://github.com/CodandoTV/agent-skills/releases/tag/v2.0.0
 [1.0.0]: https://github.com/CodandoTV/agent-skills/releases/tag/v1.0.0

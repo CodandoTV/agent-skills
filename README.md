@@ -57,7 +57,7 @@ npx skills update local-code-review local-open-pr
 
 Versions are git tags. The installer has no semantic versioning of its own — a
 version is whatever ref you ask it to clone. Latest release:
-[v1.0.0](https://github.com/CodandoTV/agent-skills/releases/latest).
+[v2.0.0](https://github.com/CodandoTV/agent-skills/releases/latest).
 
 Installing without a ref follows `main`, so corrections arrive with
 `npx skills update` (recommended):
@@ -69,7 +69,7 @@ npx skills add CodandoTV/agent-skills -g --skill local-code-review --skill local
 Pinning a release holds the skill still:
 
 ```bash
-npx skills add CodandoTV/agent-skills#v1.0.0 -g --skill local-code-review --skill local-open-pr
+npx skills add CodandoTV/agent-skills#v2.0.0 -g --skill local-code-review --skill local-open-pr
 ```
 
 That difference is not cosmetic. `npx skills update` re-resolves the ref recorded
