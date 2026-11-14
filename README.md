@@ -81,6 +81,54 @@ One version covers the whole repository because the two skills are complements
 that ship together. What counts as major, minor, and patch is written down at the
 top of [CHANGELOG.md](CHANGELOG.md).
 
+## Editing a skill
+
+On a machine that installs these skills there are two copies — this checkout and
+the one the agent reads in `~/.agents/skills`. Pick one writable side, or they
+drift silently.
+
+**Recommended: link the installed copies to the checkout (once).**
+
+```bash
+make link
+```
+
+This replaces `~/.agents/skills/<name>` with a symlink into `skills/<name>` here,
+so editing the installed copy *is* editing the repository: nothing to sync, and
+`make drift` stays quiet by construction. The skill provider follows symlinked
+entries, so discovery is unaffected. Old copies are moved to
+`.backup-<timestamp>-<name>`, never deleted. `make link` refuses when a copy has
+diverged, because linking would silently pick a side.
+
+**If you edit the installed copy instead** (another machine, or before linking):
+
+```bash
+make sync-dry   # what would change, including deletions
+make sync       # installed copy wins; validates, then prints git status
+```
+
+**If you edit here** and want the agent to use it right away:
+
+```bash
+make deploy     # checkout wins; the agent re-reads the body on its next load
+```
+
+Then publish, the same way in every case:
+
+```bash
+# 1. add "## [x.y.z] - YYYY-MM-DD" with its entries to CHANGELOG.md
+# 2. commit
+make release VERSION=x.y.z
+```
+
+`make release` validates, refuses a dirty tree or a missing CHANGELOG section,
+tags `vX.Y.Z`, pushes, and publishes notes taken from that section. To see the
+plan without touching GitHub: `bash tools/release.sh x.y.z --dry-run`.
+
+Do not run `npx skills add` (or `update`) for these two names once linked: the
+installer materializes its own copy under `~/.agents/skills`, replacing the link,
+and its lock entry then disagrees with your edits.
+
 ## Requirements
 
 Both skills:
@@ -112,6 +160,12 @@ skills/
     SKILL.md
 tools/
   validate-skills.py            # frontmatter, catalog cap, cited paths
+  drift.sh                      # installed copy vs checkout
+  sync-from-global.sh           # installed copy -> checkout
+  deploy.sh                     # checkout -> installed copy
+  link.sh                       # replace installed copies with symlinks
+  release.sh                    # validate, tag, push, publish
+Makefile                        # make validate | drift | sync | deploy | link | release
 .github/workflows/
   validate-skills.yml           # runs the validator plus a discovery smoke test
 ```

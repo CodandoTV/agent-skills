@@ -19,6 +19,15 @@ What the version numbers mean for a skill, which is not quite library software:
 
 ## [Unreleased]
 
+### Added
+
+- `make link`, `make sync`, `make deploy`, and `make drift` (scripts under `tools/`)
+  so the installed copy in `~/.agents/skills` and this checkout cannot diverge
+  unnoticed, plus `make release`, which validates, tags, pushes, and publishes notes
+  from this file.
+- README section "Editing a skill" documenting which side is writable and what to run
+  after a change.
+
 ## [1.0.0] - 2026-11-14
 
 ### Added
