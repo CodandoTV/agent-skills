@@ -26,7 +26,7 @@ The skill directory is the base directory printed in `<skill_resources>`; call i
 - Never print a secret, token, key, or password. Redact it and tell the user to rotate it.
 - Never write to the issue tracker: no comments, labels, assignments, or closes.
 - Never push, force-push, rebase published commits, reset, clean, or stash. Do not amend the user's work without an explicit instruction.
-- Do not create the branch, write a file, or commit anything before the user chooses **Proceed**.
+- Do not create the branch, change tracked files, or commit anything before the user chooses **Proceed**. Fetching the base and running local reproduction commands are allowed.
 - Keep the plan and scratch output out of the repository. Put scratch in `mktemp -d`.
 - Stage explicit paths. Do not `git add -A` or `git add .`.
 - Do not run a destructive git command to recover from a failed step. Stop and report.
