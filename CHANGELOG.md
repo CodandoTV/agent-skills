@@ -28,6 +28,14 @@ What the version numbers mean for a skill, which is not quite library software:
 - README section "Editing a skill" documenting which side is writable and what to run
   after a change.
 
+### Changed
+
+- `local-open-pr` now links the issue(s) a PR resolves: the body carries one
+  `Closes #N` (or `Closes owner/repo#N`) line per issue, resolved from the user's
+  request, the branch commits, or the branch name, verified with `gh issue view`,
+  and omitted when the branch closes none. This changes the fixed PR shape, so it
+  is a major release when published.
+
 ## [1.0.0] - 2026-11-14
 
 ### Added

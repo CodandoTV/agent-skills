@@ -1,17 +1,17 @@
 ---
 name: local-open-pr
-description: Open a pull request for the current branch with a fixed-shape description — one sentence for the problem target, one for how it is solved, then a Mermaid data-flow diagram of the Dart, Kotlin, and Python components the change touches. Use once the work is committed and pushed, when the user says "open a PR", "raise/create a pull request", or "put this up for review".
+description: Open a pull request for the current branch with a fixed-shape description — one sentence for the problem target with a Closes <issueLink> line for each issue the change resolves, one for how it is solved, then a Mermaid data-flow diagram of the Dart, Kotlin, and Python components the change touches. Use once the work is committed and pushed, when the user says "open a PR", "raise/create a pull request", or "put this up for review".
 ---
 
 Open the pull request for the current branch.
 
-Every PR this skill creates carries the same **fixed shape**: two one-sentence sections, then a Mermaid **data-flow** diagram of the software components the diff touches — Dart, Kotlin, and Python files only.
+Every PR this skill creates carries the same **fixed shape**: one sentence naming the problem it targets and a `Closes <issueLink>` line for each issue it resolves, one sentence for how it is solved, then a Mermaid **data-flow** diagram of the software components the diff touches — Dart, Kotlin, and Python files only.
 
-- **Problem target** — one sentence, the thing that was wrong or missing.
+- **Problem target** — one sentence, the thing that was wrong or missing, then one `Closes <issueLink>` line per issue the change resolves (none when the branch closes no issue).
 - **How it is solved** — one sentence, the mechanism that fixes it.
 - **Blast radius** — a `mermaid` data-flow diagram of the Dart, Kotlin, or Python components the diff touches, showing what data moves between them.
 
-Short is the point. One sentence per section; the diagram carries the structure that prose would spend a paragraph on. When the filtered diff touches no such file, say so in one line instead of drawing a diagram.
+Short is the point. One sentence per section; the `Closes` line is a reference, not prose, and the diagram carries the structure that prose would spend a paragraph on. When the filtered diff touches no such file, say so in one line instead of drawing a diagram.
 
 `local-feature-branch-pr` owns branch + commit. This skill starts once commits exist and owns only the PR.
 
@@ -59,7 +59,33 @@ If an open PR already exists, stop and print its URL — do not create a second 
 
 **Completion criterion:** no open PR exists for `<head>`, or the run stopped.
 
-### 4. Read the data flow
+### 4. Resolve the issues this closes
+
+The `Closes` line is only as good as the link. Resolve it before writing the body, cheapest source first:
+
+1. **The user's request** — if they named an issue (`#42`, an `.../issues/42` URL, or "closes 42"), that is authoritative. Use exactly the issues named there.
+2. **The branch commits**:
+   ```bash
+   git log origin/<base>..HEAD --format='%s%n%b'
+   ```
+   Scan subjects and bodies for a GitHub closing keyword (`close`, `closes`, `closed`, `fix`, `fixes`, `fixed`, `resolve`, `resolves`, `resolved`) followed by `#N` or `owner/repo#N`. Plain mentions, `Refs`, and vague prose are not closing references.
+3. **The branch name** — accept only an explicit `#N` or `owner/repo#N`. A bare number in a branch name is not an issue number.
+4. **Ask once** — when none of the above names an issue, ask: "Which issue(s) does this PR close? Paste `#N`, `owner/repo#N`, or the issue link(s), or say none." Do not search issues by title and do not guess.
+
+Verify each reference and read the issue so the problem sentence can use its vocabulary:
+
+```bash
+gh issue view <N> --json number,title,state,url
+gh issue view <N> --repo <owner>/<repo> --json number,title,state,url   # another repository
+```
+
+Normalize to the exact body form: `#N` for an issue in the PR's repository, `owner/repo#N` for another one. Full issue URLs are not the documented closing syntax. Deduplicate and keep the order found; an already-closed issue stays in the list.
+
+When `gh issue view` fails, the reference is wrong or inaccessible: ask the user. Do not substitute a nearby issue and do not invent one. If the user says there is none, keep the list empty — the body then omits the line.
+
+**Completion criterion:** a deduplicated, verified list of issue references in their final body form, or an empty list after the user confirms there is no issue.
+
+### 5. Read the data flow
 
 This is the only step that needs judgement, so do it before writing a word:
 
@@ -79,7 +105,7 @@ An adjacent unchanged component is allowed only as the producer or consumer an e
 
 **Completion criterion:** every changed `.dart`/`.kt`/`.py` file is a node, an edge's data label, or a stated exclusion, and each node's data source and destination are identified where they exist.
 
-### 5. Write the body
+### 6. Write the body
 
 Write it to a temp file, never inline in the shell — backticks in a Mermaid block will execute.
 
@@ -87,6 +113,8 @@ Write it to a temp file, never inline in the shell — backticks in a Mermaid bl
 ## Problem target
 
 <one sentence>
+
+Closes <issueLink>
 
 ## How it is solved
 
@@ -100,7 +128,9 @@ flowchart LR
 ```
 ````
 
-The block under `## Blast radius` is the data-flow map from step 6, not a dependency graph. When no software component changed, replace it with the one-line note from step 4.
+The block under `## Blast radius` is the data-flow map from step 7, not a dependency graph. When no software component changed, replace it with the one-line note from step 5.
+
+`<issueLink>` is the reference resolved in step 4 — `#42`, or `owner/repo#42` for another repository. Write one `Closes` line per issue, each with its own keyword, and omit the line entirely when the list is empty. It is a reference, not a sentence: the two-sentence rule below counts only the prose. Put the line(s) directly under the problem sentence with a blank line around them, so the issue reads as the problem being targeted.
 
 Rules for the two sentences:
 
@@ -109,7 +139,7 @@ Rules for the two sentences:
 - **How it is solved** names the mechanism: what now happens instead, in the same vocabulary as the repository.
 - Read them back-to-back — if the second one only restates the first in the past tense, rewrite it.
 
-### 6. Draw the data-flow diagram
+### 7. Draw the data-flow diagram
 
 The diagram exists so a reviewer sees how data moves through the components the change reaches without reading the diff. It follows the data, not the file tree — include only software components the diff touches (`.dart`, `.kt`, `.py`), plus one adjacent unchanged component only where an edge needs a producer or consumer to land on.
 
@@ -133,7 +163,7 @@ flowchart LR
 
 **Completion criterion:** every changed `.dart`/`.kt`/`.py` file is a node, an edge's data label, or a stated exclusion (generated, test, wiring-only); every edge carries a concrete data name; every node has at least one edge; the block parses as valid Mermaid.
 
-### 7. Create the PR
+### 8. Create the PR
 
 Derive the title from the commits in conventional-commit form (`feat(ui): add dark mode toggle`), under 72 characters.
 
@@ -149,27 +179,37 @@ If `gh` is missing or `gh auth status` fails, stop and say what to install or ru
 
 **Completion criterion:** `gh pr create` exits 0 and prints a PR URL.
 
-### 8. Verify and report
+### 9. Verify and report
 
 ```bash
-gh pr view --json url,body --jq '.body'
+gh pr view --json url,body,baseRefName,closingIssuesReferences
+gh repo view --json defaultBranchRef --jq .defaultBranchRef.name
 ```
 
-Confirm the body has both sentence sections and either a fenced `mermaid` block whose edges are data-labelled, or the one-line no-software-components note. Then print:
+Confirm the body has both sentence sections, one `Closes` line per issue resolved in step 4 (or none), and either a fenced `mermaid` block whose edges are data-labelled, or the one-line no-software-components note.
+
+GitHub links closing keywords only when the PR targets the repository's default branch. When `baseRefName` differs from that branch, say plainly that the `Closes` lines are inert until the merge reaches the default branch.
+
+When the base **is** the default branch and an issue was expected, confirm `closingIssuesReferences` lists each one. If it does not, rewrite the body once with `gh pr edit --body-file` and re-check; if it still does not, print the URL with an explicit warning that GitHub did not link the issue. Then print:
 
 ```
 🚀 PR opened: <URL>
 ```
 
-The skill is done when the URL is printed. Do not merge, do not request reviewers, do not edit the PR after creation unless the user asks.
+The skill is done when the URL is printed. Do not merge, do not request reviewers, and do not edit the PR after creation for any other reason unless the user asks.
 
 ## Edge cases
 
 - **Empty diff after commits** — the branch is ahead but the merge-base diff is empty; report it and stop rather than opening an empty PR.
 - **Detached HEAD** — ask which branch to open the PR from.
 - **Base branch not fetched** — `git fetch origin <base>` before diffing.
-- **No software components** — the filtered diff is empty; omit the Mermaid block and write the note from step 4. Keep the two sentences.
+- **No software components** — the filtered diff is empty; omit the Mermaid block and write the note from step 5. Keep the two sentences.
 - **Only tests, generated code, or wiring** — same note; these files exercise or wire components but carry no product data flow.
+- **No issue to close** — step 4 asked and the answer was none; omit the `Closes` line instead of inventing one.
+- **Unresolvable issue reference** — `gh issue view` fails; ask the user, do not substitute a nearby issue.
+- **Base is not the default branch** — GitHub ignores closing keywords; keep the line only as a reference and say it will not auto-close.
+- **Several issues** — one `Closes` line each, every line carrying its own keyword; no bare `#10, #11` continuation.
+- **Issue already closed** — keep the line; linking a closed issue is harmless.
 - **Data flow leaves the diff** — include the nearest unchanged producer or consumer as one adjacent node only.
 - **New type with no producer or consumer** — no edge exists; note it instead of inventing a node or self-edge.
-- **Diagram won't render** — check for quoted-label mistakes, angle-bracket generics, a stray `end` id, or an unclosed `subgraph`; fix and re-verify with step 8.
+- **Diagram won't render** — check for quoted-label mistakes, angle-bracket generics, a stray `end` id, or an unclosed `subgraph`; fix and re-verify with step 9.
