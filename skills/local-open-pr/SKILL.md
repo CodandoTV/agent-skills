@@ -13,7 +13,7 @@ Every PR this skill creates carries the same **fixed shape**: one sentence namin
 
 Short is the point. One sentence per section; the `Closes` line is a reference, not prose, and the diagram carries the structure that prose would spend a paragraph on. When the filtered diff touches no such file, say so in one line instead of drawing a diagram.
 
-`local-feature-branch-pr` owns branch + commit. This skill starts once commits exist and owns only the PR.
+`local-triage-work` owns branch + commit. This skill starts once commits exist and owns only the PR.
 
 ## Process
 

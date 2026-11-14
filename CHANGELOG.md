@@ -19,6 +19,22 @@ What the version numbers mean for a skill, which is not quite library software:
 
 ## [Unreleased]
 
+### Added
+
+- `local-triage-work` — turn a GitHub issue link or a text description of a bug,
+  feature, or tech debt into an agreed plan and local commits: interview the user,
+  design a strategy, present the implementation plan for review, then on approval cut
+  a feature branch from the updated base branch and commit each step. Never pushes or
+  opens a PR.
+
+### Changed
+
+- `local-open-pr` now names `local-triage-work` as the owner of branch and commits,
+  replacing the reference to `local-feature-branch-pr`, which does not ship in this
+  repository.
+- README documents the three-skill pipeline and includes `local-triage-work` in the
+  install, update, and layout instructions.
+
 ## [2.0.0] - 2026-11-14
 
 ### Added
