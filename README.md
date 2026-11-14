@@ -11,7 +11,7 @@ manager. They work with any agent that reads the `SKILL.md` convention.
 | Skill | What it does | Trigger |
 |---|---|---|
 | [`local-code-review`](skills/local-code-review/SKILL.md) | Reviews a GitHub PR from a clone sitting on the PR's updated base branch: short PR summary, diff-health checklist, integration with the local code, tests and regressions, a green/yellow/orange/red diagnostic, then per-finding triage that publishes the accepted findings to GitHub. Read-only: never checks out or executes PR code. | You paste a `github.com/.../pull/...` URL and ask for a review |
-| [`local-open-pr`](skills/local-open-pr/SKILL.md) | Opens the PR for the current branch with a fixed shape: one sentence for the problem target, one for how it is solved, then a Mermaid data-flow diagram of the Dart, Kotlin, and Python components the diff touches. | "open a PR", "raise a pull request", "put this up for review" |
+| [`local-open-pr`](skills/local-open-pr/SKILL.md) | Opens the PR for the current branch with a fixed shape: one sentence for the problem target with a `Closes` line for each issue it resolves, one for how it is solved, then a Mermaid data-flow diagram of the Dart, Kotlin, and Python components the diff touches. | "open a PR", "raise a pull request", "put this up for review" |
 
 The two are complements, not alternatives: `local-open-pr` starts once commits
 exist and owns only the PR, while `local-code-review` starts from a reviewer's
