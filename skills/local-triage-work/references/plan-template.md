@@ -74,7 +74,7 @@ Each step should leave the tree in a state the repository's checks still accept.
 ### Delivery
 
 - Base: `<remote>/<base>` @ `<short sha>`
-- Branch: `<type>/<slug>`
+- Branch: `<type>/<slug>`, or the existing branch to reuse when Phase 0.2 chose reuse
 - Commits: one per completed step, conventional messages, local only
 - Nothing is pushed; `local-open-pr` opens the PR later
 

@@ -99,7 +99,7 @@ Stop with one exact fix command when:
 - `git status --porcelain` is non-empty → list up to 10 paths and ask the user to commit, stash, or discard them. Never stash for them;
 - HEAD is detached → ask which branch or base to use.
 
-If the current branch is another feature branch with commits, ask whether to reuse it or cut a new branch from base — the default is a new branch, as requested. If the user chooses reuse, Phase 5 stays on that branch instead of creating one.
+If the current branch is another feature branch with commits, ask whether to reuse it or cut a new branch from base — the default is a new branch, as requested. If the user chooses reuse, record that branch as the plan's branch and Phase 5 stays on it instead of creating one.
 
 **Completion criterion:** a clean tree, an attached HEAD, and a named `REMOTE`; or the run stopped with a repair command.
 
@@ -200,7 +200,7 @@ BASE_SHA=$(git rev-parse "$REMOTE/$BASE")
 git check-ref-format --branch "$BRANCH"
 ```
 
-If the branch already exists, ask whether to reuse it or choose another name. Never force and never delete it:
+If the branch already exists and reuse was not already chosen in Phase 0.2, ask whether to reuse it or choose another name. Never force and never delete it:
 
 ```bash
 if git show-ref --verify --quiet "refs/heads/$BRANCH"; then
@@ -208,7 +208,7 @@ if git show-ref --verify --quiet "refs/heads/$BRANCH"; then
 fi
 ```
 
-If the user chooses to reuse a branch — the current one from Phase 0, or an existing one here — skip creation, switch to it if needed (`git switch "$BRANCH"`), and record `START_POINT=$(git merge-base "$REMOTE/$BASE" HEAD)`; never reset, rebase, or rewrite its commits.
+If reuse was chosen — in Phase 0.2 or in answer to the question above — skip creation, switch to it if needed (`git switch "$BRANCH"`), and record `START_POINT=$(git merge-base "$REMOTE/$BASE" HEAD)`; never reset, rebase, or rewrite its commits.
 
 Otherwise cut the new branch:
 
