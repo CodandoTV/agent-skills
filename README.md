@@ -53,6 +53,34 @@ Update later with:
 npx skills update local-code-review local-open-pr
 ```
 
+## Versioning
+
+Versions are git tags. The installer has no semantic versioning of its own — a
+version is whatever ref you ask it to clone. Latest release:
+[v1.0.0](https://github.com/CodandoTV/agent-skills/releases/latest).
+
+Installing without a ref follows `main`, so corrections arrive with
+`npx skills update` (recommended):
+
+```bash
+npx skills add CodandoTV/agent-skills -g --skill local-code-review --skill local-open-pr
+```
+
+Pinning a release holds the skill still:
+
+```bash
+npx skills add CodandoTV/agent-skills#v1.0.0 -g --skill local-code-review --skill local-open-pr
+```
+
+That difference is not cosmetic. `npx skills update` re-resolves the ref recorded
+in the lock file, so a pinned install is frozen on that tag and never moves — to
+upgrade it you re-run `add` with the new tag. Pin by **tag**, not by commit SHA:
+the installer clones with `git clone --branch`, which rejects a SHA.
+
+One version covers the whole repository because the two skills are complements
+that ship together. What counts as major, minor, and patch is written down at the
+top of [CHANGELOG.md](CHANGELOG.md).
+
 ## Requirements
 
 Both skills:
@@ -82,7 +110,27 @@ skills/
       changed-lines.sh          # maps added lines to inline-comment anchors
   local-open-pr/
     SKILL.md
+tools/
+  validate-skills.py            # frontmatter, catalog cap, cited paths
+.github/workflows/
+  validate-skills.yml           # runs the validator plus a discovery smoke test
 ```
 
 `references/` and `scripts/` are loaded on demand by the skill body, so keep them
 beside the `SKILL.md` that mentions them.
+
+## Changing a skill
+
+Run the validator before pushing — CI runs the same thing and will fail the PR:
+
+```bash
+pip install pyyaml
+python3 tools/validate-skills.py
+```
+
+It rejects a `name` that does not match its directory, a `description` over the
+500-character catalog cap (the tail with the trigger phrases is what gets
+truncated), a body that cites a `references/` or `scripts/` path that does not
+exist, and camelCase invocation flags. Adding a behavioural change means adding a
+[CHANGELOG.md](CHANGELOG.md) entry and tagging the release.
+

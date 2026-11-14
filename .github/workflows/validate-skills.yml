@@ -1,0 +1,35 @@
+name: validate-skills
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install validator dependencies
+        run: pip install --quiet pyyaml
+
+      - name: Validate skill frontmatter and cited paths
+        run: python3 tools/validate-skills.py
+
+      # The unit checks above can pass while discovery still fails: the installer
+      # walks the tree differently (one level per root, root SKILL.md wins unless
+      # --full-depth). Listing through the real CLI is the end-to-end check.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Discoverable by the skills CLI
+        run: npx --yes skills@1.5.23 add . -l

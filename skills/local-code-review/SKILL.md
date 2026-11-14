@@ -1,13 +1,13 @@
 ---
 name: local-code-review
 description: >-
-  Review a GitHub pull request from a local clone that is on the PR's updated
-  base branch. Prints a short PR summary, then reviews the diff against a
-  diff-health checklist, the integration with local code, and the tests and
+  Review a GitHub pull request from a local clone checked out on the PR's updated
+  base branch. Prints a short summary, then reviews the diff against a
+  diff-health checklist, its integration with local code, and tests and
   regressions; ends with a green/yellow/orange/red diagnostic and per-finding
-  triage that publishes accepted findings to GitHub. Use when the user supplies
-  a github.com PR URL and asks for a code review, says "review PR <link>",
-  "review this pull request locally", or "local code review".
+  triage that publishes accepted findings to GitHub. Use when given a github.com
+  PR URL with a review request, or on "review PR <link>", "review this pull
+  request locally", "local code review".
 ---
 
 # Local code review
