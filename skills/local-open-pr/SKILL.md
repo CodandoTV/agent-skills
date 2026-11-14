@@ -25,7 +25,7 @@ git symbolic-ref --short refs/remotes/origin/HEAD    # → e.g. origin/master
 git log origin/<base>..HEAD --oneline
 ```
 
-Resolve `<base>` from `origin/HEAD`; if that fails, prefer `master` then `main`, and if both exist ask the user which one.
+Resolve `<base>` from `origin/HEAD`; if that fails, use whichever of `master` and `main` exists, and ask the user which one is the base when both do.
 
 Stop with a one-line reason when any of these is true:
 

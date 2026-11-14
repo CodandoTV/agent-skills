@@ -34,6 +34,9 @@ What the version numbers mean for a skill, which is not quite library software:
   repository.
 - README documents the three-skill pipeline and includes `local-triage-work` in the
   install, update, and layout instructions.
+- Base-branch resolution is now unambiguous in `local-open-pr` and
+  `local-triage-work`: use the only `master`/`main` that exists, and ask when both do,
+  instead of preferring one and asking at the same time.
 
 ## [2.0.0] - 2026-11-14
 

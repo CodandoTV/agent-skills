@@ -109,7 +109,7 @@ If the current branch is another feature branch with commits, ask whether to reu
 BASE=$(git symbolic-ref --short "refs/remotes/$REMOTE/HEAD" 2>/dev/null | sed "s#^$REMOTE/##")
 ```
 
-If that is empty, prefer `master`, then `main`; check each with `git show-ref --verify --quiet "refs/remotes/$REMOTE/<name>"`, and ask when both exist. Call the winner `BASE`. Then:
+If that is empty, look for `master` and `main` with `git show-ref --verify --quiet "refs/remotes/$REMOTE/<name>"`; use the one that exists, and ask which one is the base when both do. Call the winner `BASE`. Then:
 
 ```bash
 git fetch "$REMOTE" "$BASE"
