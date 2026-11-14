@@ -22,20 +22,20 @@ clone and owns only the review.
 Global (available in every project):
 
 ```bash
-npx skills add gabrielbmoro/agent-skills -g --skill local-code-review --skill local-open-pr
+npx skills add CodandoTV/agent-skills -g --skill local-code-review --skill local-open-pr
 ```
 
 Preview without installing (lists what the repository contains):
 
 ```bash
-npx skills add gabrielbmoro/agent-skills -l
+npx skills add CodandoTV/agent-skills -l
 ```
 
 Project-scoped instead of global (commit-able, shared with everyone who clones
 that repository):
 
 ```bash
-npx skills add gabrielbmoro/agent-skills --skill local-code-review --skill local-open-pr
+npx skills add CodandoTV/agent-skills --skill local-code-review --skill local-open-pr
 ```
 
 The installer symlinks into the detected agent directories by default. From a
