@@ -30,6 +30,10 @@ What the version numbers mean for a skill, which is not quite library software:
 - `skills/local-address-pr-comments/scripts/fetch-comments.sh` — builds the triage
   queue from the GraphQL review threads plus the REST reviews and conversation
   comments, normalized with the ids a reply or a resolve needs.
+- `skills/local-address-pr-comments/scripts/queue.jq` and
+  `tools/test-fetch-comments.sh` — the queue builder's jq program, out of the shell
+  heredoc so `make test` and CI run it over fixtures without a network or a live pull
+  request, plus the fixtures themselves.
 - `skills/local-address-pr-comments/references/response-strategies.md` — how to decide
   between fixing and answering each kind of review comment.
 

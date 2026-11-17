@@ -1,9 +1,10 @@
 SHELL := /bin/bash
 
-.PHONY: help validate drift sync sync-dry deploy link release
+.PHONY: help validate test drift sync sync-dry deploy link release
 
 help:
 	@echo "validate   frontmatter, catalog description cap, cited paths"
+	@echo "test       fixture tests for the comment queue builder"
 	@echo "drift      compare the installed skills with this checkout (exit 1 on drift)"
 	@echo "sync       pull edits from the installed copy into this checkout (dry run: sync-dry)"
 	@echo "deploy     copy this checkout into the installed copy"
@@ -12,6 +13,9 @@ help:
 
 validate:
 	python3 tools/validate-skills.py
+
+test:
+	bash tools/test-fetch-comments.sh
 
 drift:
 	bash tools/drift.sh

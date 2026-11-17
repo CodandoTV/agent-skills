@@ -200,9 +200,10 @@ tools/
   deploy.sh                     # checkout -> installed copy
   link.sh                       # replace installed copies with symlinks
   release.sh                    # validate, tag, push, publish
-Makefile                        # make validate | drift | sync | deploy | link | release
+  test-fetch-comments.sh        # fixture tests for the comment queue builder
+Makefile                        # make validate | test | drift | sync | deploy | link | release
 .github/workflows/
-  validate-skills.yml           # runs the validator plus a discovery smoke test
+  validate-skills.yml           # validator, queue tests, discovery smoke test
 ```
 
 `references/` and `scripts/` are loaded on demand by the skill body, so keep them

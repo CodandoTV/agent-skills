@@ -16,7 +16,8 @@
 #                      reply or a resolve needs
 #   summary.json       counts and permissions for the run header
 #
-# The queue and the summary are built by queue.jq next to this script.
+# The queue and the summary are built by queue.jq next to this script; the
+# repository's tools/test-fetch-comments.sh runs that program over fixtures.
 #
 # The queue excludes what needs no prompt: resolved threads, threads or
 # comments already answered by this skill (its hidden marker is in the body),
