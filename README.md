@@ -177,6 +177,7 @@ skills/
       response-strategies.md     # how to fix vs. answer each kind of comment
     scripts/
       fetch-comments.sh          # comment queue from the GitHub API
+      queue.jq                   # the queue and summary builder, over the fetched JSON
   local-code-review/
     SKILL.md
     references/
