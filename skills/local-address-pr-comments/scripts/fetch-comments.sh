@@ -62,18 +62,28 @@ fi
 
 mkdir -p "$OUT"
 
-gh pr view "$PR_URL" \
+if ! gh pr view "$PR_URL" \
   --json number,url,state,isDraft,baseRefName,headRefName,headRefOid,headRepository,isCrossRepository,author,title \
-  > "$OUT/pr.json"
+  > "$OUT/pr.json"; then
+  echo 'failed to read the pull request (does the URL exist and can you see it?)' >&2
+  exit 4
+fi
 
 REPO_SLUG=$(jq -r '.url | capture("github\\.com/(?<slug>[^/]+/[^/]+)/pull").slug' "$OUT/pr.json")
 OWNER=${REPO_SLUG%/*}
 REPO=${REPO_SLUG#*/}
 N=$(jq -r .number "$OUT/pr.json")
 PR_AUTHOR=$(jq -r '.author.login // ""' "$OUT/pr.json")
-VIEWER=$(gh api user --jq .login)
 
-PERMISSIONS=$(gh api "repos/$OWNER/$REPO" --jq '.permissions // {}')
+if ! VIEWER=$(gh api user --jq .login); then
+  echo 'failed to read the authenticated user; run: gh auth login' >&2
+  exit 3
+fi
+
+if ! PERMISSIONS=$(gh api "repos/$OWNER/$REPO" --jq '.permissions // {}'); then
+  printf 'failed to read permissions for %s/%s (does the token have access?)\n' "$OWNER" "$REPO" >&2
+  exit 4
+fi
 
 THREADS_QUERY='
 query($owner:String!,$repo:String!,$number:Int!,$endCursor:String){
@@ -114,10 +124,16 @@ if ! gh api graphql --paginate --slurp -f query="$THREADS_QUERY" \
   exit 4
 fi
 
-gh api --paginate --slurp "repos/$OWNER/$REPO/issues/$N/comments?per_page=100" \
-  | jq 'add // []' > "$OUT/issue-comments.json"
-gh api --paginate --slurp "repos/$OWNER/$REPO/pulls/$N/reviews?per_page=100" \
-  | jq 'add // []' > "$OUT/reviews.json"
+if ! gh api --paginate --slurp "repos/$OWNER/$REPO/issues/$N/comments?per_page=100" \
+  | jq 'add // []' > "$OUT/issue-comments.json"; then
+  echo 'failed to read the conversation comments (does the PR exist and can you see it?)' >&2
+  exit 4
+fi
+if ! gh api --paginate --slurp "repos/$OWNER/$REPO/pulls/$N/reviews?per_page=100" \
+  | jq 'add // []' > "$OUT/reviews.json"; then
+  echo 'failed to read the reviews (does the PR exist and can you see it?)' >&2
+  exit 4
+fi
 
 if ! jq -n \
   --slurpfile threads "$OUT/threads.json" \
