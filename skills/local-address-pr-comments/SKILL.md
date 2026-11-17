@@ -211,7 +211,7 @@ git commit -m "<type>(<scope>): <imperative summary>" -m "Addresses review comme
 
 Conventional subject under about 72 characters; the body carries the trace. Let pre-commit hooks run. Never use `--no-verify` unless the user explicitly asks. Never amend, not even a commit from this run. If `git diff --cached --check` flags whitespace, fix it before committing. If a hook or a signer fails, fix it and retry once; if it still fails, stop the run, leave the tree as it is, and report the exact command that failed.
 
-8. Resolve the thread, when it has one and `resolvable` is true:
+8. Resolve the thread, when it has one and `resolvable` is true, with `THREAD_ID` set from the item's `thread_id`:
 
 ```bash
 gh api graphql -f query='query($id:ID!){node(id:$id){... on PullRequestReviewThread{isResolved}}}' \
