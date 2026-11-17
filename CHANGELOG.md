@@ -19,6 +19,8 @@ What the version numbers mean for a skill, which is not quite library software:
 
 ## [Unreleased]
 
+## [2.2.0] - 2026-11-17
+
 ### Added
 
 - `local-address-pr-comments` — work through a GitHub pull request's review threads
@@ -96,7 +98,8 @@ What the version numbers mean for a skill, which is not quite library software:
 - `tools/validate-skills.py` plus the `validate-skills` workflow, keeping frontmatter,
   the catalog description cap, and the paths cited by each body in sync.
 
-[Unreleased]: https://github.com/CodandoTV/agent-skills/compare/v2.1.0...HEAD
+[Unreleased]: https://github.com/CodandoTV/agent-skills/compare/v2.2.0...HEAD
+[2.2.0]: https://github.com/CodandoTV/agent-skills/releases/tag/v2.2.0
 [2.1.0]: https://github.com/CodandoTV/agent-skills/releases/tag/v2.1.0
 [2.0.0]: https://github.com/CodandoTV/agent-skills/releases/tag/v2.0.0
 [1.0.0]: https://github.com/CodandoTV/agent-skills/releases/tag/v1.0.0
