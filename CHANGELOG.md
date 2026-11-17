@@ -19,6 +19,25 @@ What the version numbers mean for a skill, which is not quite library software:
 
 ## [Unreleased]
 
+### Added
+
+- `local-address-pr-comments` — work through a GitHub pull request's review threads
+  and conversation comments from a clone on its head branch, one prompt per item:
+  **Fix and resolve** applies the smallest change, runs the narrowest check, makes one
+  local commit, and resolves the thread; **Comment and resolve** posts an approved
+  reply and resolves the thread; **Skip** leaves both alone. Never pushes, so resolved
+  threads point at commits only the local clone has until the user pushes.
+- `skills/local-address-pr-comments/scripts/fetch-comments.sh` — builds the triage
+  queue from the GraphQL review threads plus the REST reviews and conversation
+  comments, normalized with the ids a reply or a resolve needs.
+- `skills/local-address-pr-comments/references/response-strategies.md` — how to decide
+  between fixing and answering each kind of review comment.
+
+### Changed
+
+- README documents the fourth skill, its install and update commands, its
+  requirements, and the layout entry.
+
 ## [2.1.0] - 2026-11-14
 
 ### Added
