@@ -10,62 +10,31 @@ manager. They work with any agent that reads the `SKILL.md` convention.
 
 ## Human in the loop
 
-These skills are built as **human-in-the-loop (HITL)** workflows: the agent does
-the reading, drafting, checking, and git/GitHub mechanics, while the human makes
-the decisions that change scope or have external consequences. Not every step
-needs a prompt; the point is to keep the human accountable for the decisions
-that are expensive or hard to undo, and the agent responsible for the mechanical
-execution. The agent is useful without being autonomous: it can propose and
-execute, but it cannot decide what the work is or publish it on its own. Where a
-skill stops for a decision, it runs as a loop: the agent proposes, the human
-chooses, the agent acts, and the run reports back with evidence.
-
-The loop looks like this:
+These skills are **human-in-the-loop (HITL)** workflows: the agent does the
+reading, drafting, checking, and git/GitHub mechanics; the human makes the
+decisions that change scope or reach GitHub. At each decision point, the agent
+proposes, the human approves, revises, or stops, and only then does the agent
+act and report back. Silence is not consent: an empty or skipped answer means
+stop or skip. No skill merges or approves a review, and only `local-open-pr`
+pushes — when you ask it to open the PR.
 
 ```mermaid
-flowchart LR
-    propose["Agent proposes"] --> decide{"Human decides"}
-    decide -->|Approve| act["Agent acts"]
-    decide -->|Revise| propose
-    decide -->|Stop or skip| stop["No change"]
-    act --> report["Agent reports evidence"]
-    report --> propose
+sequenceDiagram
+    participant H as Human
+    participant A as Agent
+
+    H->>A: Request work
+    loop Until approved or stopped
+        A->>H: Propose plan, finding, or reply
+        H->>A: Approve, revise, or stop
+    end
+    alt Approve
+        A->>A: Act and verify
+        A->>H: Report evidence
+    else Stop or skip
+        Note over A,H: Nothing changes
+    end
 ```
-
-The gate, per skill:
-
-- **`local-triage-work`** — the plan gate. After the interview the agent prints
-  the full plan and waits for **Proceed**, **Adjust plan**, or **Stop**. No
-  branch, tracked file, or commit exists before **Proceed**; **Adjust**
-  re-presents the whole plan, **Stop** (or silence) creates nothing, and an
-  implementation that disproves the plan returns to this gate.
-- **`local-open-pr`** — the request gate. It runs when you ask it to open the PR,
-  from commits that already exist, and asks once when it cannot resolve which
-  issues the PR closes. It refuses to duplicate an open PR and does not merge,
-  request reviewers, or edit the PR afterwards.
-- **`local-code-review`** — the publication gate. The review is read-only; the
-  agent prints the findings, then asks **Publish on GitHub**, **Skip**, or
-  **Back to previous finding** for each one. Only accepted findings are posted,
-  and a run with nothing published writes nothing.
-- **`local-address-pr-comments`** — the action gate. The agent walks the queue
-  one item at a time, asking **Fix and resolve**, **Comment and resolve**, or
-  **Skip**. A reply is drafted for your approval before it is posted, and a
-  thread is resolved only after its fix is committed or its reply is posted.
-
-The rules that keep the loop honest:
-
-- **Silence is not consent.** An empty or skipped answer means **Stop** or
-  **Skip**; an informal "sounds good" is not **Proceed**. If the runtime offers
-  no way to ask, the agent prints its work and stops.
-- **The agent recommends; the human decides.** It can name a recommended option
-  and explain why the others lost, but scope, approach, publication, and reply
-  wording are settled only by the human's choice.
-- **The agent stops rather than guesses.** Preconditions are verified before
-  work starts; where a clean tree is required, a dirty one stops the run, and a
-  moved PR head or a changed fact stops it with a repair or a return to the gate.
-- **The agent does not cross the human boundary.** No skill merges, approves or
-  dismisses a review on GitHub, or pushes — except `local-open-pr`, which pushes
-  and opens the PR because that is the action you asked for.
 
 ## Skills
 
@@ -82,10 +51,6 @@ from an issue or a description and ends at local commits on a feature branch,
 `local-code-review` starts from a reviewer's clone and owns only the review, and
 `local-address-pr-comments` starts once comments exist and owns the local fixes
 and the replies to them.
-
-That pipeline stays human-in-the-loop: the plan gate, the request to open the PR,
-the publish-or-skip calls, and the fix-or-comment-or-skip calls all belong to the
-human.
 
 ## Install
 
