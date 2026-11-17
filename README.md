@@ -1,8 +1,9 @@
 # agent-skills
 
 Agent skills for turning an issue or a work description into planned, locally
-committed code, opening pull requests with a fixed-shape description, and reviewing
-a GitHub pull request from a local clone.
+committed code, opening pull requests with a fixed-shape description, reviewing
+a GitHub pull request from a local clone, and working through its review comments
+with local commits and GitHub replies.
 
 These are plain `SKILL.md` directories — no build step, no runtime, no package
 manager. They work with any agent that reads the `SKILL.md` convention.
@@ -14,18 +15,23 @@ manager. They work with any agent that reads the `SKILL.md` convention.
 | [`local-triage-work`](skills/local-triage-work/SKILL.md) | Turns a GitHub issue link or a text description of a bug, feature, or tech debt into an agreed plan and local commits: interviews the user, designs a strategy, presents the plan for review, then on approval cuts a feature branch from the updated base branch and commits each step. Never pushes or opens a PR. | You paste an issue link or describe the work and ask to triage, plan, or implement it |
 | [`local-open-pr`](skills/local-open-pr/SKILL.md) | Opens the PR for the current branch with a fixed shape: one sentence for the problem target with a `Closes` line for each issue it resolves, one for how it is solved, then a Mermaid data-flow diagram of the Dart, Kotlin, and Python components the diff touches. | "open a PR", "raise a pull request", "put this up for review" |
 | [`local-code-review`](skills/local-code-review/SKILL.md) | Reviews a GitHub PR from a clone sitting on the PR's updated base branch: short PR summary, diff-health checklist, integration with the local code, tests and regressions, a green/yellow/orange/red diagnostic, then per-finding triage that publishes the accepted findings to GitHub. Read-only: never checks out or executes PR code. | You paste a `github.com/.../pull/...` URL and ask for a review |
+| [`local-address-pr-comments`](skills/local-address-pr-comments/SKILL.md) | Works through the open review threads and comments on a GitHub PR from a clone on its head branch. Each one prompts **Fix and resolve** (smallest change, one local commit, thread resolved), **Comment and resolve** (reply posted, thread resolved), or **Skip**. Never pushes: resolved threads point at commits only the local clone has until the user pushes. | You paste a `github.com/.../pull/...` URL and ask to address, fix, or answer the review comments |
 
-The three are stages of one pipeline, not alternatives: `local-triage-work` starts
+The four are stages of one pipeline, not alternatives: `local-triage-work` starts
 from an issue or a description and ends at local commits on a feature branch,
-`local-open-pr` starts once those commits exist and owns only the PR, and
-`local-code-review` starts from a reviewer's clone and owns only the review.
+`local-open-pr` starts once those commits exist and owns only the PR,
+`local-code-review` starts from a reviewer's clone and owns only the review, and
+`local-address-pr-comments` starts once comments exist and owns the local fixes
+and the replies to them.
 
 ## Install
 
 Global (available in every project):
 
 ```bash
-npx skills add CodandoTV/agent-skills -g --skill local-triage-work --skill local-code-review --skill local-open-pr
+npx skills add CodandoTV/agent-skills -g \
+  --skill local-triage-work --skill local-code-review --skill local-open-pr \
+  --skill local-address-pr-comments
 ```
 
 Preview without installing (lists what the repository contains):
@@ -38,7 +44,9 @@ Project-scoped instead of global (commit-able, shared with everyone who clones
 that repository):
 
 ```bash
-npx skills add CodandoTV/agent-skills --skill local-triage-work --skill local-code-review --skill local-open-pr
+npx skills add CodandoTV/agent-skills \
+  --skill local-triage-work --skill local-code-review --skill local-open-pr \
+  --skill local-address-pr-comments
 ```
 
 The installer symlinks into the detected agent directories by default. From a
@@ -47,13 +55,14 @@ local checkout where the source may move, add `--copy`.
 Manual install — copy the folders into any skill root your agent watches:
 
 ```bash
-cp -R skills/local-triage-work skills/local-code-review skills/local-open-pr ~/.agents/skills/
+cp -R skills/local-triage-work skills/local-code-review skills/local-open-pr \
+  skills/local-address-pr-comments ~/.agents/skills/
 ```
 
 Update later with:
 
 ```bash
-npx skills update local-triage-work local-code-review local-open-pr
+npx skills update local-triage-work local-code-review local-open-pr local-address-pr-comments
 ```
 
 ## Versioning
@@ -66,13 +75,17 @@ Installing without a ref follows `main`, so corrections arrive with
 `npx skills update` (recommended):
 
 ```bash
-npx skills add CodandoTV/agent-skills -g --skill local-triage-work --skill local-code-review --skill local-open-pr
+npx skills add CodandoTV/agent-skills -g \
+  --skill local-triage-work --skill local-code-review --skill local-open-pr \
+  --skill local-address-pr-comments
 ```
 
 Pinning a release holds the skill still:
 
 ```bash
-npx skills add CodandoTV/agent-skills#v2.1.0 -g --skill local-triage-work --skill local-code-review --skill local-open-pr
+npx skills add CodandoTV/agent-skills#v2.1.0 -g \
+  --skill local-triage-work --skill local-code-review --skill local-open-pr \
+  --skill local-address-pr-comments
 ```
 
 That difference is not cosmetic. `npx skills update` re-resolves the ref recorded
@@ -80,7 +93,7 @@ in the lock file, so a pinned install is frozen on that tag and never moves — 
 upgrade it you re-run `add` with the new tag. Pin by **tag**, not by commit SHA:
 the installer clones with `git clone --branch`, which rejects a SHA.
 
-One version covers the whole repository because the three skills are stages of one
+One version covers the whole repository because the skills are stages of one
 pipeline that ship together. What counts as major, minor, and patch is written down
 at the top of [CHANGELOG.md](CHANGELOG.md).
 
@@ -128,13 +141,13 @@ make release VERSION=x.y.z
 tags `vX.Y.Z`, pushes, and publishes notes taken from that section. To see the
 plan without touching GitHub: `bash tools/release.sh x.y.z --dry-run`.
 
-Do not run `npx skills add` (or `update`) for these three names once linked: the
+Do not run `npx skills add` (or `update`) for these names once linked: the
 installer materializes its own copy under `~/.agents/skills`, replacing the link,
 and its lock entry then disagrees with your edits.
 
 ## Requirements
 
-All three:
+All four:
 
 - `git`, with a clone of the repository the work belongs to.
 
@@ -150,10 +163,21 @@ the diff, so the clone should be on an up-to-date base branch.
 the PR, and draws its blast-radius diagram as Mermaid, so the component listing is
 limited to Dart, Kotlin, and Python files in the diff.
 
+`local-address-pr-comments` additionally uses an authenticated `gh` with write access
+to the PR's repository (for replies and thread resolution), `jq`, and a clone checked
+out on the PR's head branch. It commits each accepted fix locally and never pushes.
+
 ## Layout
 
 ```text
 skills/
+  local-address-pr-comments/
+    SKILL.md
+    references/
+      response-strategies.md     # how to fix vs. answer each kind of comment
+    scripts/
+      fetch-comments.sh          # comment queue from the GitHub API
+      queue.jq                   # the queue and summary builder, over the fetched JSON
   local-code-review/
     SKILL.md
     references/
@@ -176,9 +200,10 @@ tools/
   deploy.sh                     # checkout -> installed copy
   link.sh                       # replace installed copies with symlinks
   release.sh                    # validate, tag, push, publish
-Makefile                        # make validate | drift | sync | deploy | link | release
+  test-fetch-comments.sh        # fixture tests for the comment queue builder
+Makefile                        # make validate | test | drift | sync | deploy | link | release
 .github/workflows/
-  validate-skills.yml           # runs the validator plus a discovery smoke test
+  validate-skills.yml           # validator, queue tests, discovery smoke test
 ```
 
 `references/` and `scripts/` are loaded on demand by the skill body, so keep them

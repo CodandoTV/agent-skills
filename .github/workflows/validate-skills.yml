@@ -24,6 +24,9 @@ jobs:
       - name: Validate skill frontmatter and cited paths
         run: python3 tools/validate-skills.py
 
+      - name: Test the comment queue builder
+        run: bash tools/test-fetch-comments.sh
+
       # The unit checks above can pass while discovery still fails: the installer
       # walks the tree differently (one level per root, root SKILL.md wins unless
       # --full-depth). Listing through the real CLI is the end-to-end check.
