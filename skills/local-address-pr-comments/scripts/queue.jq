@@ -14,12 +14,25 @@
 # fixtures without touching the network.
 
 def is_bot: (. // "") | endswith("[bot]");
-def marker: "<!-- local-address-pr-comments:";
-def answered($comments): any($comments[]; ((.body // "") | contains("<!-- local-address-pr-comments:")));
 
-($threads[0] // [] | map(
+# The hidden marker every reply this skill posts ends with. The key after it is
+# the queue item's own `key`, so a later run can tell which item was answered.
+def reply_marker: "<!-- local-address-pr-comments:reply:";
+def reply_key_re: reply_marker + "([A-Za-z0-9:_-]+) -->";
+
+# Every answer key written anywhere the skill could have written one: a reply
+# inside a review thread, or a standalone conversation comment.
+def reply_keys: [ .[] | (.body // "") | scan(reply_key_re) | .[0] ];
+
+($threads[0] // []) as $T
+| ($reviews[0] // []) as $R
+| ($issues[0] // []) as $I
+
+| ([ ($T[] | (.comments.nodes // [])[]), $I[] ] | reply_keys | unique) as $answered
+
+| ($T | map(
     . as $t
-    | ($t.comments.nodes | sort_by(.createdAt)) as $comments
+    | (($t.comments.nodes // []) | sort_by(.createdAt)) as $comments
     | ([$comments[]
         | select((.author.login // "") != $viewer and (.author.login // "") != $author)]
        | first) as $primary
@@ -57,7 +70,7 @@ def answered($comments): any($comments[]; ((.body // "") | contains("<!-- local-
           ],
           status: (
             if $t.isResolved then "resolved"
-            elif answered($comments) then "answered"
+            elif ($answered | index("thread:" + $t.id)) != null then "answered"
             else "open"
             end
           )
@@ -68,18 +81,18 @@ def answered($comments): any($comments[]; ((.body // "") | contains("<!-- local-
 | ($thread_items | map(select(. != null))) as $threads_with_feedback
 | ([$threads_with_feedback[] | select(.status == "open")] | length) as $threads_open
 
-| ($reviews[0] // [] | map(
+| ($R | map(
       . as $r
       | select(((.body // "") | test("\\S")))
       | select((.user.login // "") != $viewer and (.user.login // "") != $author)
       | {
-          key: ("review:" + (.id | tostring)),
+          key: ("review:" + ($r.id | tostring)),
           kind: "review",
           resolvable: false,
           can_reply: true,
           thread_id: null,
           reply_to_comment_id: null,
-          comment_id: .id,
+          comment_id: $r.id,
           path: null,
           line: null,
           original_line: null,
@@ -88,31 +101,33 @@ def answered($comments): any($comments[]; ((.body // "") | contains("<!-- local-
           outdated: false,
           author: (.user.login // "unknown"),
           bot: ((((.user.type // "") == "Bot") or (.user.login | is_bot))),
-          created_at: .submitted_at,
-          body: .body,
-          url: (.html_url // ""),
-          review_state: .state,
+          created_at: $r.submitted_at,
+          body: $r.body,
+          url: ($r.html_url // ""),
+          review_state: $r.state,
           transcript: [],
           status: (
-            if (.body | contains(marker)) then "answered" else "open" end
+            if ($answered | index("review:" + ($r.id | tostring))) != null then "answered"
+            else "open"
+            end
           )
         }
     )
 ) as $review_items
 
-| ($issues[0] // [] | map(
+| ($I | map(
       . as $c
       | select(((.body // "") | test("\\S")))
       | select((.user.login // "") != $viewer and (.user.login // "") != $author)
       | select((.isMinimized // false) | not)
       | {
-          key: ("comment:" + (.id | tostring)),
+          key: ("comment:" + ($c.id | tostring)),
           kind: "conversation",
           resolvable: false,
           can_reply: true,
           thread_id: null,
           reply_to_comment_id: null,
-          comment_id: .id,
+          comment_id: $c.id,
           path: null,
           line: null,
           original_line: null,
@@ -121,13 +136,15 @@ def answered($comments): any($comments[]; ((.body // "") | contains("<!-- local-
           outdated: false,
           author: (.user.login // "unknown"),
           bot: ((((.user.type // "") == "Bot") or (.user.login | is_bot))),
-          created_at: .created_at,
-          body: .body,
-          url: (.html_url // ""),
+          created_at: $c.created_at,
+          body: $c.body,
+          url: ($c.html_url // ""),
           review_state: null,
           transcript: [],
           status: (
-            if (.body | contains(marker)) then "answered" else "open" end
+            if ($answered | index("comment:" + ($c.id | tostring))) != null then "answered"
+            else "open"
+            end
           )
         }
     )
@@ -150,15 +167,15 @@ def answered($comments): any($comments[]; ((.body // "") | contains("<!-- local-
       pr_author: $author,
       permissions: $permissions,
       counts: {
-        threads_total: (($threads[0] // []) | length),
+        threads_total: ($T | length),
         threads_with_feedback: ($threads_with_feedback | length),
         threads_open: $threads_open,
         threads_resolved: ([$threads_with_feedback[] | select(.status == "resolved")] | length),
         threads_answered: ([$threads_with_feedback[] | select(.status == "answered")] | length),
-        reviews_total: (($reviews[0] // []) | length),
+        reviews_total: ($R | length),
         reviews_open: ([$review_items[] | select(.status == "open")] | length),
         reviews_answered: ([$review_items[] | select(.status == "answered")] | length),
-        issue_comments_total: (($issues[0] // []) | length),
+        issue_comments_total: ($I | length),
         issue_comments_open: ([$comment_items[] | select(.status == "open")] | length),
         issue_comments_answered: ([$comment_items[] | select(.status == "answered")] | length),
         answered_total: (

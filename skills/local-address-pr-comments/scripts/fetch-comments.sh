@@ -98,7 +98,6 @@ query($owner:String!,$repo:String!,$number:Int!,$endCursor:String){
               body
               url
               createdAt
-              replyTo{databaseId}
               author{__typename login}
             }
           }

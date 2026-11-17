@@ -116,7 +116,7 @@ The queue is the scope. It holds, in triage order:
 - **review** — one item per review with a non-empty body from someone else;
 - **conversation** — one item per issue comment from someone else.
 
-Resolved threads, comments by you or the PR author, minimized conversation comments, and items already carrying this skill's hidden marker are counted in the header, not prompted. That is deliberate: a resolved thread has already been decided, and a second run must not re-ask it.
+Resolved threads, comments by you or the PR author, minimized conversation comments, and items this skill has already answered are counted in the header, not prompted. An item counts as answered when any comment the run can read — a thread reply or a standalone conversation comment — ends with the hidden marker naming that item's key, so a review summary and a conversation comment are recognized even though their replies are new comments. That is deliberate: a resolved thread has already been decided, and a second run must not re-ask it.
 
 ### 0.4 Header
 
@@ -245,6 +245,8 @@ Only after the user chooses it.
 ```text
 <!-- local-address-pr-comments:reply:<key> -->
 ```
+
+`<key>` is the item's `key` exactly as the queue carries it: `thread:<thread id>`, `review:<review id>`, or `comment:<comment id>`. The queue builder reads every marker back on the next run and matches it against those keys, so this one line is what stops a re-run from prompting the item again or posting the reply twice.
 
 5. Re-check the PR state and head. Post, with `REPLY_TO_COMMENT_ID` set from the item's `reply_to_comment_id`:
 
